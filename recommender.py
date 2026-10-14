@@ -29,24 +29,64 @@ recommendations = {
     {"name": "Cal.com", "best_for": "teams that want an open-source scheduling tool", "price": "free plan available"},
     {"name": "Acuity Scheduling", "best_for": "service businesses that take paid appointments", "price": "paid, check website"}
   ],
-    "payments": [
+  "payments": [
     {"name": "Stripe", "best_for": "taking card payments on a website or online store", "price": "per-transaction fees, check website"},
     {"name": "PayPal", "best_for": "customers who prefer to pay with their PayPal account", "price": "per-transaction fees, check website"},
     {"name": "SumUp", "best_for": "small businesses that take card payments in person", "price": "card reader plus fees, check website"}
   ],
-    "project management": [
+  "project management": [
     {"name": "Trello", "best_for": "simple task boards for small teams", "price": "free plan available"},
     {"name": "Asana", "best_for": "teams that need to track tasks and deadlines", "price": "free plan available"},
     {"name": "Notion", "best_for": "teams that want notes, tasks and documents in one place", "price": "free plan available"}
   ]
 }
 
+
+class TrieNode:
+  def __init__(self):
+    self.children = {}
+    self.is_word = False
+
+
+class Trie:
+  def __init__(self):
+    self.root = TrieNode()
+
+  def insert(self, word):
+    node = self.root
+    for letter in word:
+      if letter not in node.children:
+        node.children[letter] = TrieNode()
+      node = node.children[letter]
+    node.is_word = True
+
+  def find_prefix_node(self, prefix):
+    node = self.root
+    for letter in prefix:
+      if letter not in node.children:
+        return None
+      node = node.children[letter]
+    return node
+
+  def collect_words(self, node, current_word, words):
+    if node.is_word:
+      words.append(current_word)
+    for letter in node.children:
+      self.collect_words(node.children[letter], current_word + letter, words)
+
+
+trie = Trie()
+for category in recommendations:
+  trie.insert(category)
+
+
 def find_matches(prefix):
-  matches = []
-  for category in recommendations:
-    if category.startswith(prefix):
-      matches.append(category)
-  return matches
+  node = trie.find_prefix_node(prefix)
+  if node is None:
+    return []
+  words = []
+  trie.collect_words(node, prefix, words)
+  return words
 
 
 def show_recommendations(category):
